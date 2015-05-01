@@ -1,27 +1,11 @@
 <?php
-	require_once("create_comment.php");
-	require_once("delete_comment.php");
 	
-class comment
-{
-	private $post;
-	private $comment;
-	private $id_com;
-
-	public function __construct($Publication,$commentaire)
-	{
-		$this->comment = $commentaire;
-		$this->post = $Publication;
-		$this->createComment($Publication,$commentaire);
-	}
-
-
-	function alterComment($post, $text)
+	//permet de créer un commentaire dans la bdd
+	function createComment($post, $text)
 	{
 		try
 			{	
-
-				//ON établi une connexion avec la base de données
+			//ON établi une connexion avec la base de données
 			$pdo = new PDO("mysql:host=localhost;dbname=projetapi", 'root','');
 			echo "ca passe";
 
@@ -29,8 +13,6 @@ class comment
 
 	        //On ajoute des variable à la suite
 	         $this->id_com = $pdo->lastInsertId();
-
-	         echo "xxxxxxxxxxx  ".$this->id_com;
 
 	         $req = $pdo->prepare($query);
 	         $req->execute(array(
@@ -47,6 +29,5 @@ class comment
 	}		
 
 	}
-}
 
 ?>
