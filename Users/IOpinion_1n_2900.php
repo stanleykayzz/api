@@ -1,0 +1,5 @@
+﻿<?php
+	interface IOpinion {
+		
+	}
+?>
