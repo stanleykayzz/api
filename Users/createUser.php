@@ -11,7 +11,7 @@
 		} else $host = "localhost";
 	} else $host = "localhost";
 	
-	if(isset($_GET["dbname"])) {
+	if(isset($_G ET["dbname"])) {
 		if(!empty($_GET["dbname"])) {
 			$dbname = $_GET["dbname"];
 		} else $dbname = "db_ap";
@@ -30,65 +30,100 @@
 	}else $dbpsw = "";
 	*/
 	
-	$host = "localhost";
-	$dbname = "projetapi";
-	$dbid = "root";
-	$dbpsw = "";
-	
 	@$mail = $_GET["mail"];
 	@$confmail = $_GET["confmail"];
 	@$passwd = $_GET["passwd"];
 	@$confpasswd = $_GET["confpasswd"];
 	@$send = $_GET["send"];
 	
-	json = createUser($mail, $passwd, $confmail, $confpasswd, $send, $host, $dbname, $dbid, $dbpsw);	
+	createUser($mail, $passwd, $confmail, $confpasswd, $send);	
 	
-	function createUser($mail, $passwd, $confmail, $confpasswd, $send, $host, $dbname, $dbid, $dbpsw) {
+	function createUser($mail, $passwd, $confmail, $confpasswd, $send) {
 	
+		$host = "localhost";
+		$dbname = "projetapi";
+		$dbid = "root";
+		$dbpsw = "";
+		
+		//On verifie que les parametres d'entrée ne sont pas vides
+		// A sovoir : $mail, $passwd, $confm, $confp et $send
 		if(!empty($mail) and !empty($passwd) and !empty($confmail) and !empty($confpasswd) and !empty($send)) {
+			//On créé les params connus
 			$params = array(":mail"=>$mail, ":passwd"=>$passwd);
 			$user = new Users();
 			
+			//Connexion
 			if(!($pdo = new PDO("mysql:host=".$host.";dbname=".$dbname, $dbid, $dbpsw)) != NULL) {
 				$output["code"] = 5;
 				$output["result"] = "Internal server error";
 				$output["infos"] = array(
 					"query"=>"SELECT DB = ".$dbname." WITH id = ".$dbid." AND psw = ".$dbpsw." AND host = ".$host
 				);
-				echo json_encode($output);
+				unset($pdo);
 				return json_encode($output);
 			}
 			
-			$insert = "INSERT INTO user (mail, password) VALUES (:mail, :passwd)";
+			//Requete select pour verifier que l'utilisateur entrant est unique
+			$state = $pdo->prepare("SELECT * FROM user WHERE mail = :mail AND password = :passwd");
+			
+			//Execution
+			if($state and $state->execute($params)) {
+				$rows = $state->fetchAll();
+				if(count($rows) > 1 || count($rows) < 0) {
+					$output = array(
+						"code"=>2,
+						"result"=>"Email already registered!"
+					);
+					return json_encode($output);
+				}
+			}
+			
+			$params[":token"] = addToken($mail, $pdo);
+			
+			//Préparation de la requete d'insertion
+			$insert = "INSERT INTO user (mail, password, token) VALUES (:mail, :passwd, :token)";
 			$state = $pdo->prepare($insert);
 			
-			if(verifMail($mail, $confmail, $pdo, $state)) {
 			
-				if(verifPassword($passwd)) {
+			//Vérification du mail entrant
+			if(verifMail($mail, $confmail, $pdo)) {
+				
+				//Verification du password entrant
+				if(verifPassword($passwd, $confpasswd)) {
+					
+					//Execution de l'insertion
 					if($state and $state->execute($params)) {
-						$user->setMail($mail);
-						$user->setPasswd($passwd);
-						
+					
 						$state2 = $pdo->prepare("SELECT * FROM user WHERE mail = :mail AND password = :passwd");
 						
 						if($state2 and $state2->execute($params)) {
-							$row = $state->fetch(PDO::FETCH_ASSOC);
-							$_SESSION["id"] = $row["id_user"];
+							$row = $state2->fetch(PDO::FETCH_ASSOC);
+							$user->setId($row["id_user"]);
+							$user->setMail($row["mail"]);
+							$user->setPasswd(row["password"]);
+							$user->setToken($row["token"]);
+							
+							$_SESSION["id"] = $user->getId();
 							$_SESSION["mail"] = $user->getMail();
-							$_SESSION["passwd"] = $user->getPasswd();
+							$_SESSION["psw"] = $user->getPasswd();
+							$_SESSION["token"] = $user->getToken();
 							
-							
-							$output["code"] = 0;
-							$output["result"] = "OK";
-							$output["infos"] = array(
-								"query"=>$insert,
-								"id_user"=>$_SESSION["id"],
-								"mail"=>$user->getMail(),
-								"passwd"=>$user->getPasswd()
+							$ouput = array(
+								"code"=>0,
+								"result"=>"OK",
+								"infos"=> array(
+									"query"=>$insert,
+									"id_user"=> $user->getId(),
+									"mail"=>$user->getMail(),
+									"password"=>$user->getPasswd(),
+									"token"=>$user->getToken()
+								)
 							);
-							return json_encode($output);
+							
 							unset($state);
 							unset($pdo);
+							
+							return json_encode($output);
 							
 						} else {
 							$output["code"] = 7;
@@ -108,7 +143,6 @@
 			} else {
 				$output["code"] = 2;
 				$output["result"] = "Email already registered or well-written!";
-				echo json_encode($output);
 				return json_encode($output);
 			}
 		} else {
@@ -118,7 +152,21 @@
 		}
 	}
 	
-	function verifMail($mail, $confmail, $pdo, $state) {
+	function addToken($mail, $pdo) {
+		$params = array (":mail"=>$mail);
+		
+		$state = $pdo->prepare("SELECT * FROM user WHERE mail = :mail");
+		
+		if($state and $state->execute($params))
+		{
+			$row = $state->fetch(PDO::FETCH_ASSOC);
+			if(($token = rand(00000000000, 99999999999)) == (int)$row["token"])
+				$token = addToken($mail, $pdo);
+			else return $token;
+		}		
+	}
+	
+	function verifMail($mail, $confmail, $pdo) {
 		$params = array(":mail"=>$mail);
 		$state = $pdo->prepare("SELECT * FROM user WHERE mail = :mail");
 		
@@ -133,11 +181,12 @@
 		} else return false;
 	}
 	
-	function verifPassword($passwd) {
-		if(strlen($passwd) > 3 and strlen($passwd) < 17)
-			return true;
-		else
-			return false;
+	function verifPassword($passwd, $confpasswd) {
+		if(strlen($passwd) > 3 and strlen($passwd) < 17) {
+			if($confpasswd === $passwd) {
+				return true;
+			} else return false;
+		} else return false;
 	}
 ?>
   
