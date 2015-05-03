@@ -2,7 +2,7 @@
 
 echo "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\" />";
 
-require_once("C:/wamp/www/Projet_API/Comments/comment.php");
+require_once("classe_comment.php");
 
 class post extends comment
 {
@@ -139,12 +139,64 @@ supprimer tous les éléments associés à cette publication.*/
 	        echo "ça passe pas";
 	}
 	}
+
+	/*
+
+	4. Liste des publications concernant l'utilisateur
+	connecté et de ses amis (Timeline)
+	Retourne la liste des publications des amis de l'utilisateur
+	connecté ainsi que les siennes. Le tout doit être par date.
+
+	NB : il faudra utiliser un système de pagination sur les résultats
+	ce service prendra en paramètre:
+	offset: la position du premier element à envoyer
+	limit: Nombre d'éléments à renvoyer*/
+
+	public function Timeline($connectedUser, $offset=0, $limit=5)
+	{
+
+		// on compte ses publications et ses amis
+		//page
+		//modulo
+		$nbrPublication=0;
+		$l=$limit;
+
+		$utilisateur;
+		try
+	{		
+			//ON établi une connexion avec la base de données
+			$pdo = new PDO("mysql:host=localhost;dbname=projetapi", 'root','');
+			// on affiche seulement les status de l'utilisateur connecté
+	        $statement = $pdo->query("SELECT * FROM post WHERE id_users = ".$connectedUser);
+    		for($o=$offset;$line = $statement->fetch(PDO::FETCH_ASSOC);$o++){
+    		$post = new post($line["id_posts"], $line["texte"]);
+    		$postList[$o]= $post;
+    		$nbrPublication++;
+    			//echo $post->description;
+    			//echo "\n nbrPublication ".$nbrPublication." \n";
+    	}
+	}
+	catch (Exception $e)
+	{
+	        die('Erreur : ' . $e->getMessage());
+	        echo "ça passe pas";
+	}
+
+
+	for($i=$offset;$i<$l;$i++)
+	{
+		$resultList[$i] = $postList[$i];
+	}
+
+		return $resultList;
+	}
 }
 
 //$publicationDeMoi = new post(2,2,"Quand on fini est projet de php on est léger ;)");
 //$publi = new post(1,10,"faut reconnaitre que le java est quand même plus long et plus chiant que le php -_-");
-$publi = new post(1," passe très bien ");
-$publi->deletePost(19);
+//$publi = new post(1," der des der ");
+//$publi->Timeline(1,0,2);
+//$publi->deletePost(19);
 //$publi->alterPost(5,"Bon moi je vais me coucher, à plus");
 
 
