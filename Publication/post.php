@@ -43,17 +43,7 @@ Donc lors de la création du post il doit être possible de créer un commentair
 			//on récupère le dernier id de post et on l'augmente à chaque post
 	        //$this->idPost = $pdo->lastInsertId();
 
-	        //$lastIdpost;
-
-	        $statement = $pdo->query("SELECT * FROM  `post`");
-    		while($row =$statement->fetch(PDO::FETCH_ASSOC) ){
-	        $lastIdpost=$row["id_posts"];}
-
-	        //On fait un insert du commentaire dans la table commentaire
-			//la description d'un post est un commentaire , on crée donc un commentaire
-			//dont l'idPost est le post actuel et le texte celui du commentaire
-			$theComment = new comment( $lastIdpost++, $texte);	
-			$theComment->createComment($lastIdpost++, $texte);
+	        $lastIdpost = $pdo->lastInsertId();
 
 	         $req = $pdo->prepare($query);
 	         $req->execute(array(
@@ -61,6 +51,16 @@ Donc lors de la création du post il doit être possible de créer un commentair
 	         	':texte' => $this->description,
 	         	':id_users' => $this->user
 	         ));
+
+	         $statement = $pdo->query("SELECT * FROM  `post`");
+    		while($row =$statement->fetch(PDO::FETCH_ASSOC) ){
+	        $Idpost=$row["id_posts"];}	        
+
+	        //On fait un insert du commentaire dans la table commentaire
+			//la description d'un post est un commentaire , on crée donc un commentaire
+			//dont l'idPost est le post actuel et le texte celui du commentaire
+			$theComment = new comment( $Idpost, $texte);	
+			$theComment->createComment($Idpost, $texte);
 
 	        echo "ça passe, tu viens de rajouter un post dans ta bdd ";
 		
@@ -86,11 +86,17 @@ Modifie une publication existante à partir des informations fournies.*/
 
 	        //On fait un UPDATE du commentaire dans la table commentaire
 
-	        //on met à jour 
+	        //on met à jour le post 
 	        $updateQuery = "UPDATE post SET texte = :texte WHERE id_posts =:id_posts";
 
 	         $req = $pdo->prepare($updateQuery);
 	         $req->execute(array(':texte' => $updatedTexte,':id_posts' => $id_publication));
+
+	        //on met à jour le comment 
+	        $updateComm = "UPDATE comment SET texte = :texte WHERE id_posts =:id_posts";
+
+	         $r = $pdo->prepare($updateComm);
+	         $r->execute(array(':texte' => $updatedTexte,':id_posts' => $id_publication));
 
 	        echo "ça passe, tu viens de modifier un commentaire dans ta bdd ";
 	}
@@ -119,7 +125,13 @@ supprimer tous les éléments associés à cette publication.*/
 	        $deleteQuery = "DELETE FROM post WHERE id_posts=:id_posts";
 		 	$req = $pdo->prepare($deleteQuery);
 	        $req->execute(array(':id_posts' => $id_post));
-	        echo " <br/><br/> <h3>tu viens de supprimer un post </h3>";
+
+
+	        //lorsqu'on supprime la publication, on supprime aussi le commentaire associé
+	        $deleteComm = "DELETE FROM comment WHERE id_posts=:id_posts";
+		 	$r = $pdo->prepare($deleteComm);
+	        $r->execute(array(':id_posts' => $id_post));
+
 	}
 	catch (Exception $e)
 	{
@@ -131,8 +143,8 @@ supprimer tous les éléments associés à cette publication.*/
 
 //$publicationDeMoi = new post(2,2,"Quand on fini est projet de php on est léger ;)");
 //$publi = new post(1,10,"faut reconnaitre que le java est quand même plus long et plus chiant que le php -_-");
-$publi = new post(1," le bouch-money");
-//$publi->deletePost(8);
+$publi = new post(1," passe très bien ");
+$publi->deletePost(19);
 //$publi->alterPost(5,"Bon moi je vais me coucher, à plus");
 
 
