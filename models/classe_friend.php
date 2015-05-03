@@ -7,7 +7,7 @@ session_start();
 class Friend
 {
 	/* Permet a un utilisateur de faire une demande d'ami  :  int id , int id_friend */
-	static public function ask_friend_resquest($id,$id_friend)
+	public function ask_friend_resquest($id,$id_friend)
 	{
 		$pdo = new PDO("mysql:host=localhost;dbname=projet_api","root","");
 		$params = array(":id" => $id, ":id_friend" => $id_friend);
@@ -22,7 +22,7 @@ class Friend
 	}
 
 	/*Reponder a une demande d'amitier : boolean answer , int id , int id_friend*/ 
-	static public function answer_friend_resquest($answer,$id,$id_friend)
+	public function answer_friend_resquest($answer,$id,$id_friend)
 	{
 		$pdo = new PDO("mysql:host=localhost;dbname=projet_api","root","");
 
@@ -56,7 +56,7 @@ class Friend
 	}
 
 	/*Supprimer un ami  : id int , id_friend int */
-	static public function del_friend($id,$id_friend)
+	public function del_friend($id,$id_friend)
 	{
 		$pdo = new PDO("mysql:host=localhost;dbname=projet_api","root","");
 		$params = array(":id" => $id, ":id_friend" => $id_friend);
@@ -71,7 +71,7 @@ class Friend
 	}
 
 	/*Annuler une demande d'amitier :  : id int , id_friend int  */
-	static public function cancel_friend_request($id,$id_friend)
+	public function cancel_friend_request($id,$id_friend)
 	{
 		$pdo = new PDO("mysql:host=localhost;dbname=projet_api","root","");
 		$params = array(":id" => $id, ":id_friend" => $id_friend);
@@ -85,22 +85,39 @@ class Friend
 		unset($params);
 	}
 
-	/*Liste de mes amis : $offset int , $limit int*/
-	static public function get_friend_list($offset,$limit,$id_user)
+	/*Liste de mes amis : $offset int , $limit int*/ 	
+	public function get_friend_list($offset,$limit=1,$id_user)
 	{
 		$pdo = new PDO("mysql:host=localhost;dbname=projet_api","root","");
 		$params = array(":id" => $id_user );
-		$statement = $pdo->prepare("SELECT id_users,id_users_User FROM `amitie_confirme` WHERE `id_users_User` = 6 OR `id_users` = 6");
+		$statement = $pdo->prepare("SELECT`id_users`, `mail`, `pseudo`, `lastname`, `firstname` FROM user where id_users IN (
+									SELECT id_users FROM `amitie_confirme` WHERE `id_users_User` = :id
+									UNION
+									SELECT id_users_User FROM amitie_confirme WHERE  `id_users` = :id )");
 		if($statement && $statement->execute($params))
 		{
+			//Etape 1 : Compter le nombre d'amis
+			$count = $statement->rowCount();
+
+			//Etape 2 : Deduire le nombre de page
+			$nb_page = $count/$limit;
+
+			//Etape 3 : nb d'amis de la derniere page
+			$last_page = $count%$limit;
+
+
 			echo "select ok <br>";
-			$data = mysql_fetch_array($statement->execute($params));
-			echo $data;
+			while($row = $statement->fetch(PDO::FETCH_ASSOC)){
+				   echo $row["id_users"]; echo "<br>";
+				   echo $row["firstname"];  echo "<br>";
+				   echo $row["lastname"];  echo "<br><br>";
+				}
 		}
 
 		/*$result[];
 
-		//Etape 1 : Compter le nombre d'amis
+		
+
 
 		//Etape 2 : Deduire le nombre de page
 
