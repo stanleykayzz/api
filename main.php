@@ -49,8 +49,6 @@
 		}
 		
 		
-		
-		
 	} catch(Exception $e) {
 		$output = array("code"=>8, "result"=>$e->getMessage());
 	}
