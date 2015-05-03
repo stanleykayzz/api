@@ -87,7 +87,7 @@ class Friend
 	{
 		$pdo = new PDO("mysql:host=localhost;dbname=projetapi","root","");
 		$params = array(":id" => $id_user );
-		$statement = $pdo->prepare("SELECT`id_users`, `mail`, `pseudo`, `lastname`, `firstname` FROM user where id_users IN (
+		$statement = $pdo->prepare("SELECT`id_users`, `mail`, `lastname`, `firstname` FROM user where id_users IN (
 									SELECT id_users FROM `amitie_confirme` WHERE `id_users_User` = :id
 									UNION
 									SELECT id_users_User FROM amitie_confirme WHERE  `id_users` = :id )");
@@ -100,7 +100,8 @@ class Friend
 			echo "select ok <br>";
 
 			$i=0;
-			while($row = $statement->fetch(PDO::FETCH_ASSOC)){
+			while($row = $statement->fetch(PDO::FETCH_ASSOC))
+			{
 
 					$user[$i] = $row;
 					$i++;
@@ -108,35 +109,94 @@ class Friend
 				 /*  echo $row["id_users"]; echo "<br>";
 				   echo $row["firstname"];  echo "<br>";
 				   echo $row["lastname"];  echo "<br><br>";*/
-				}
+			}
 				
-				for ($i=0; $i <$limit ; $i++) { 
-					$output[$i] = $user[$offset+$i];
-				}
+			for ($i=0; $i <$limit ; $i++)
+			{ 
+				$output[$i] = $user[$offset+$i];
+			}
 
-				return $output;
+			return $output;
 		}
+
 		unset($user);
 		unset($statement);
 		unset($params);	
 	}
 
+	/*Permet de faire une recherche sur l’ensemble des utilisateurs. Il faut que l’on
+	puisse distinguer parmi ces utilisateurs ceux qui sont déjà amis avec l’utilisateur
+	connecté. Attention il ne faut renvoyer l’utilisateur connecté !*/ 
 	public function search_friend($offset=0,$limit=1,$id_user,$name)
 	{
 		$pdo = new PDO("mysql:host=localhost;dbname=projetapi","root","");
 		$params = array(":n" => $name , ":u" => $id_user);
-		$statement = $pdo->prepare("SELECT`id_users`, `mail`, `pseudo`, `lastname`, `firstname` FROM user where (firstname = :n OR  lastname = :n)
+		$statement = $pdo->prepare("SELECT`id_users`, `mail`, `lastname`, `firstname` FROM user where (firstname = :n OR  lastname = :n)
 									AND id_users NOT IN (SELECT id_users FROM user WHERE id_users = :u)");
 		if($statement && $statement->execute($params))
 		{
-			while($row = $statement->fetch(PDO::FETCH_ASSOC)){
+			//Etape 1 : Compter le nombre d'amis
+			$count = $statement->rowCount();
 
-			echo $row["pseudo"];
+		
+			echo "select ok <br>";
 
+			$i=0;
+			while($row = $statement->fetch(PDO::FETCH_ASSOC))
+			{
+
+					$user[$i] = $row;
+					$i++;
+
+				echo "id : ".$row["id_users"]."<br>"; 
+				echo "prenom :".$row["firstname"]."<br>";
+				echo "nom :".$row["lastname"]."<br>"; 
 			}
-		}		
+				
+			for ($i=0; $i <$limit ; $i++)
+			{ 
+				$output[$i] = $user[$offset+$i];
+			}
+
+			return $output;
+		}
 
 	}
+
+	/*Retourne la liste des utilisateurs comptabilisant le plus de publications dans l’ordre décroissant.
+	output est un tableau de user dans user[1] est stoque l'user qui a le plus de publication
+	puis dans user[0][id_users] : l'id et user[0][nb_post] le nombre de post */
+	public function get_list_user_most_post($offset=0,$limit=1,$id_user)
+	{
+		$pdo = new PDO("mysql:host=localhost;dbname=projetapi","root","");
+		$statement = $pdo->prepare("SELECT id_users, COUNT( id_posts ) AS nb_post FROM post WHERE id_users
+									IN (SELECT id_users FROM post GROUP BY id_users) GROUP BY id_users
+									ORDER BY COUNT( id_posts ) DESC");
+		if($statement && $statement->execute())
+		{
+			$i=0;
+			while($row = $statement->fetch(PDO::FETCH_ASSOC))
+			{
+
+					$user[$i] = $row;
+					$i++;
+
+				/*  echo "id : ".$row["id_users"]."<br>"; 
+				  echo "nb_post :".$row["nb_post"]."<br>"; */
+			}
+				
+			for ($i=0; $i <$limit ; $i++)
+			{ 
+				$output[$i] = $user[$offset+$i];
+			}
+
+			return $output;
+		}
+
+		unset($user);
+		unset($statement);
+		unset($params);	
+	}			
 } 
 
 
