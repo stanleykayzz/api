@@ -86,14 +86,29 @@ class Friend
 	}
 
 	/*Liste de mes amis : $offset int , $limit int*/
-	static public function get_friend_list($offset,$limit)
+	static public function get_friend_list($offset,$limit,$id_user)
 	{
 		$pdo = new PDO("mysql:host=localhost;dbname=projet_api","root","");
-		$statement = $pdo->prepare("SELECT * FROM `amitie_confirme` WHERE `id_users` =1");
+		$params = array(":id" => $id_user );
+		$statement = $pdo->prepare("SELECT id_users,id_users_User FROM `amitie_confirme` WHERE `id_users_User` = 6 OR `id_users` = 6");
 		if($statement && $statement->execute($params))
 		{
 			echo "select ok <br>";
+			$data = mysql_fetch_array($statement->execute($params));
+			echo $data;
 		}
+
+		/*$result[];
+
+		//Etape 1 : Compter le nombre d'amis
+
+		//Etape 2 : Deduire le nombre de page
+
+		for(i=0;i<nb_page;i++)
+		{
+			$result[i] = info_page_i;
+		} */
+		
 
 		unset($statement);
 		unset($params);	
