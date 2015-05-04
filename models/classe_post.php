@@ -1,9 +1,38 @@
 <?php
+<<<<<<< HEAD
 class post
 {
 	private $user;
 	private $idPost;
 	private $text;//on passe un objet commentaire en parametre
+=======
+
+echo "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\" />";
+
+require_once("classe_comment.php");
+
+class post 
+{
+	private $user;
+	private $idPost;
+	private $datePost;
+	private $limit;
+	private $offset;
+	private $description;//on passe un objet commentaire en parametre
+
+	//je crée un constructeur pour les publications
+	public function __construct()
+	{
+		$this->user = 0;
+		$this->description = "";
+	}
+
+	public function createPost($utilisateur,$texte,$date)
+	{
+		$this->description = $texte;
+		$this->users = $utilisateur;
+		$this->datePost = $date;
+>>>>>>> 9d3e710e7e425ab73e5af594199eb9cd9a92f862
 
 	public function createPost($texte) {
 		$host = "localhost";
@@ -14,6 +43,7 @@ class post
 Un post contient une description qui est en fait un commentaire.
 Donc lors de la création du post il doit être possible de créer un commentaire
 - Il est possible d’associer (tagguer) des amis à une publication*/
+<<<<<<< HEAD
 
 		if(!empty($texte) and !empty($_SESSION["id_user"])) {
 			//ON établi une connexion avec la base de données
@@ -60,6 +90,48 @@ Donc lors de la création du post il doit être possible de créer un commentair
 			unset($pdo);
 			return $output;
 		}		
+=======
+	
+		try
+			{	
+			//ON établi une connexion avec la base de données
+			$pdo = new PDO("mysql:host=localhost;dbname=projetapi", 'root','');
+			echo "xxxxxxx";
+			 //On fait un insert du texte dans la table publication
+	        //on crée une requete sql
+	        $query = "INSERT INTO post VALUES(:id_posts, :texte, :datePost, :id_users)"; 
+	        echo "on créé une publication";
+			//on récupère le dernier id de post et on l'augmente à chaque post
+	        //$this->idPost = $pdo->lastInsertId();
+
+	        $lastIdpost = $pdo->lastInsertId();
+
+	         $req = $pdo->prepare($query);
+	         $req->execute(array(
+	         	':id_posts' => $lastIdpost++,
+	         	':texte' => $texte,
+	         	':datePost' => $date,
+	         	':id_users' => $utilisateur
+	         ));
+
+	        $statement = $pdo->query("SELECT * FROM `post`");
+    		while($row =$statement->fetch(PDO::FETCH_ASSOC) ){
+	        $Idpost=$row["id_posts"];}	        
+
+	        //On fait un insert du commentaire dans la table commentaire
+			//la description d'un post est un commentaire , on crée donc un commentaire
+			//dont l'idPost est le post actuel et le texte celui du commentaire
+			$theComment = new comment();	
+			$theComment->createComment($Idpost, $texte, $utilisateur);
+
+	        echo "ça passe, tu viens de rajouter un post dans ta bdd ";
+		
+	}
+	catch (Exception $e)
+	{
+	        die('Erreur : ' . $e->getMessage());
+	        echo "ça passe pas";
+>>>>>>> 9d3e710e7e425ab73e5af594199eb9cd9a92f862
 	}
 
 	public function alterPost($id_publication, $updatedTexte) {
@@ -203,42 +275,52 @@ supprimer tous les éléments associés à cette publication.*/
 
 	public function Timeline($connectedUser, $offset=0, $limit=5)
 	{
-
-		// on compte ses publications et ses amis
-		//page
-		//modulo
+		$this->limit = $limit;
+		$this->offset = $offset;
 		$nbrPublication=0;
 		$l=$limit;
 
-		$utilisateur;
 		try
-	{		
+		{		
 			//ON établi une connexion avec la base de données
 			$pdo = new PDO("mysql:host=localhost;dbname=projetapi", 'root','');
 			// on affiche seulement les status de l'utilisateur connecté
-	        $statement = $pdo->query("SELECT * FROM post WHERE id_users = ".$connectedUser);
+	        $statement = $pdo->query("SELECT * FROM post WHERE id_users = ".$connectedUser."order by datePost desc limit ".$offset.", ".$limit);
     		for($o=$offset;$line = $statement->fetch(PDO::FETCH_ASSOC);$o++){
-    		$post = new post($line["id_posts"], $line["texte"]);
+    		$post = new post();
+    		$post->createPost($line["id_posts"], $line["texte"],$line["datePost"], $line["id_users"]);
     		$postList[$o]= $post;
     		$nbrPublication++;
-    			//echo $post->description;
-    			//echo "\n nbrPublication ".$nbrPublication." \n";
     	}
 	}
 	catch (Exception $e)
 	{
-	        die('Erreur : ' . $e->getMessage());
-	        echo "ça passe pas";
+	    die('Erreur : ' . $e->getMessage());
+	    echo "ça passe pas";
 	}
-
 
 	for($i=$offset;$i<$l;$i++)
 	{
 		$resultList[$i] = $postList[$i];
+		echo "<br/> ".$resultList[$i]." <br/>";
 	}
-
 		return $resultList;
 	}
 }
 
+<<<<<<< HEAD
 ?>
+=======
+//$publicationDeMoi = new post(2,2,"Quand on fini est projet de php on est léger ;)");
+//$publi = new post(1,10,"faut reconnaitre que le java est quand même plus long et plus chiant que le php -_-");
+//$publi = new post(1," der des der ");
+//$publi->Timeline(1,0,2);
+//$publi->deletePost(19);
+//$publi->alterPost(5,"Bon moi je vais me coucher, à plus");
+$p = new post();
+$p->Timeline(1,0,2);
+//$p->createPost(1," me too ",'2013-06-27');
+//$p->createPost(2," mewtwo ",'2014-06-27');
+
+?>
+>>>>>>> 9d3e710e7e425ab73e5af594199eb9cd9a92f862
