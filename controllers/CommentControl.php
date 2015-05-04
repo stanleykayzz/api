@@ -2,13 +2,13 @@
 
 Class CommentControl
 {
-	$private $params_;
+	private $params_;
 
 	public function createComment()
 	{
 		$com = new comment();
 
-		return json_encode($com->createComment($this->params_["id_posts"], $this->params_["texte"]));
+		return json_encode($com->createComment($this->params_["id_comms"], $this->params_["texte"]));
 	}
 
 	public function alterComment()
