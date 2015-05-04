@@ -1,6 +1,6 @@
 ﻿<?php
 
-class PostControl
+Class PostControl
 {
 	private $params_;
 
@@ -15,17 +15,17 @@ class PostControl
 	{
 		$com = new post();
 
-		return json_encode($com->alterComment($this->params_["id_comms"], $this->params_["texte"]));
+		return json_encode($com->createComment($this->params_["id_comms"], $this->params_["texte"]));
 	}
 
 	public function deletePost()
 	{
 		$com = new post();
 
-		return json_encode($com->deleteComment($this->params_["id_comms"]));
+		return json_encode($com->createComment($this->params_["id_comms"]));
 	}
 
 }
-
+ 
 
 ?>
