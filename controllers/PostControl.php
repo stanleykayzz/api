@@ -26,6 +26,6 @@ Class PostControl
 	}
 
 }
-
+ 
 
 ?>

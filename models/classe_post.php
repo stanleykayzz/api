@@ -4,25 +4,25 @@ echo "<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\" />"
 
 require_once("classe_comment.php");
 
-class post extends comment
+class post 
 {
 	private $user;
 	private $idPost;
+	private $datePost;
 	private $description;//on passe un objet commentaire en parametre
 
 	//je crée un constructeur pour les publications
-	public function __construct($id_user,$des)
+	public function __construct()
 	{
-		$this->user = $id_user;
-		$this->description = $des;		
-		$this->createPost($id_user,$des);
+		$this->user = 0;
+		$this->description = "";
 	}
 
-	public function createPost($utilisateur,$texte)
+	public function createPost($utilisateur,$texte,$date)
 	{
-
 		$this->description = $texte;
 		$this->users = $utilisateur;
+		$this->datePost = $date;
 
 		/*Création d’une publication à partir des informations fournies.
 Un post contient une description qui est en fait un commentaire.
@@ -31,15 +31,13 @@ Donc lors de la création du post il doit être possible de créer un commentair
 	
 		try
 			{	
-
 			//ON établi une connexion avec la base de données
 			$pdo = new PDO("mysql:host=localhost;dbname=projetapi", 'root','');
-	        echo "<br/> ça passe, tu es connecté à la bdd ";       
-
+			echo "xxxxxxx";
 			 //On fait un insert du texte dans la table publication
 	        //on crée une requete sql
-	        $query = "INSERT INTO post VALUES(:id_posts, :texte,:id_users)"; 
-
+	        $query = "INSERT INTO post VALUES(:id_posts, :texte, :datePost, :id_users)"; 
+	        echo "on créé une publication";
 			//on récupère le dernier id de post et on l'augmente à chaque post
 	        //$this->idPost = $pdo->lastInsertId();
 
@@ -48,19 +46,20 @@ Donc lors de la création du post il doit être possible de créer un commentair
 	         $req = $pdo->prepare($query);
 	         $req->execute(array(
 	         	':id_posts' => $lastIdpost++,
-	         	':texte' => $this->description,
-	         	':id_users' => $this->user
+	         	':texte' => $texte,
+	         	':datePost' => $date,
+	         	':id_users' => $utilisateur
 	         ));
 
-	         $statement = $pdo->query("SELECT * FROM  `post`");
+	        $statement = $pdo->query("SELECT * FROM `post`");
     		while($row =$statement->fetch(PDO::FETCH_ASSOC) ){
 	        $Idpost=$row["id_posts"];}	        
 
 	        //On fait un insert du commentaire dans la table commentaire
 			//la description d'un post est un commentaire , on crée donc un commentaire
 			//dont l'idPost est le post actuel et le texte celui du commentaire
-			$theComment = new comment( $Idpost, $texte);	
-			$theComment->createComment($Idpost, $texte);
+			$theComment = new comment();	
+			$theComment->createComment($Idpost, $texte, $utilisateur);
 
 	        echo "ça passe, tu viens de rajouter un post dans ta bdd ";
 		
@@ -187,7 +186,6 @@ supprimer tous les éléments associés à cette publication.*/
 	{
 		$resultList[$i] = $postList[$i];
 	}
-
 		return $resultList;
 	}
 }
@@ -198,7 +196,8 @@ supprimer tous les éléments associés à cette publication.*/
 //$publi->Timeline(1,0,2);
 //$publi->deletePost(19);
 //$publi->alterPost(5,"Bon moi je vais me coucher, à plus");
-
-
+$p = new post();
+$p->createPost(1," me too ",'2013-06-27');
+$p->createPost(2," mewtwo ",'2014-06-27');
 
 ?>

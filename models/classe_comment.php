@@ -1,6 +1,5 @@
 <?php
 
-
 class comment
 {
 	private $post;
@@ -18,7 +17,6 @@ class comment
 	//permet de créer un commentaire dans la bdd
 	public function createComment($post, $text, $user)
 	{
-
 		$this->comment = $text;
 		$this->post = $post;
 		$this->id_user = $user;
@@ -109,7 +107,5 @@ class comment
 $v = new comment();
 //$v->createComment(1,"je commente la première publication de stanleyKayzz",2);
 //$v->createComment(1,"c'est bien , continue comme ca alors :p",1);
-//$v->createComment(1," blala",1);
-//$v->alterComment(1,"je viens de modifier mon commentaire",1);
 
 ?>
