@@ -1,15 +1,5 @@
 ﻿<?php
-	session_start();
-	
-	class Users {
-		private $id_user_;
-		private $mail_;
-		private $passwd_;
-		private $dateOfBirth_;
-		private $lastName_;
-		private $firstName_;
-		private $token_;
-		
+	class Users {		
 		//Return array $output
 		/*
 		*	@Input_params : 
@@ -31,10 +21,12 @@
 				
 				//Connexion
 				if(!($pdo = new PDO("mysql:host=".$host.";dbname=".$dbname, $dbid, $dbpsw)) != NULL) {
-					$output["code"] = 5;
-					$output["result"] = "Internal server error";
-					$output["infos"] = array(
-						"query"=>"SELECT DB = ".$dbname." WITH id = ".$dbid." AND psw = ".$dbpsw." AND host = ".$host
+					$output = array(
+						"code"=>5,
+						"result"=>"Internal server error!",
+						"infos"=>array(
+							"query"=>"SELECT DB = ".$dbname." WITH id = ".$dbid." AND psw = ".$dbpsw." AND host = ".$host
+						)
 					);
 					unset($pdo);
 					return $output;
@@ -74,35 +66,34 @@
 							
 							if($state2 and $state2->execute($params)) {
 								$row = $state2->fetch(PDO::FETCH_ASSOC);
-								$this->setId($row["id_user"]);
-								$this->setMail($row["mail"]);
-								$this->setPasswd($row["password"]);
-								$this->setToken($row["token"]);
 								
-								$_SESSION["id"] = $this->getId();
-								$_SESSION["mail"] = $this->getMail();
-								$_SESSION["psw"] = $this->getPasswd();
-								$_SESSION["token"] = $this->getToken();
+								$_SESSION["id"] = $row["id_users"];
+								$_SESSION["mail"] = $row["mail"];
+								$_SESSION["psw"] = $row["password"];
+								$_SESSION["token"] = $row["token"];
 								
 								$ouput = array(
 									"code"=>0,
 									"result"=>"OK",
 									"infos"=> array(
 										"query"=>$insert,
-										"id_user"=> $this->getId(),
-										"mail"=>$this->getMail(),
-										"password"=>$this->getPasswd(),
-										"token"=>$this->getToken()
+										"id_user"=> $row["id_users"],
+										"mail"=>$row["mail"],
+										"password"=>$row["password"],
+										"token"=>$row["token"]
 									)
 								);
 								
 								unset($state);
+								unset($state2);
 								unset($pdo);
 								return $output;
 								
 							} else {
 								$output["code"] = 7;
 								$output["result"] = "Nothing to select!";
+								unset($pdo);
+								unset($state);
 								return $output;
 							}								
 						} else {
@@ -141,6 +132,8 @@
 			$dbpsw = "";
 			
 			if(!empty($mail) and !empty($passwd)) {
+
+				//Connexion
 				if(!($pdo = new PDO("mysql:host=".$host.";dbname=".$dbname, $dbid, $dbpsw))) {
 					$output = array(
 						"code"=>5,
@@ -171,6 +164,7 @@
 					$rows = $state->fetchAll();
 					$row = $state->fetch(PDO::FETCH_ASSOC);
 					$select = "SELECT * FROM user WHERE mail = ".$mail." AND password = ".$passwd;
+
 					if(count($rows) == 1) {
 						$output = array(
 							"code"=>0,
@@ -180,18 +174,12 @@
 								"connexion"=>"OK"
 							)
 						);
-						
-						if((@$_SESSION["mail"] == $mail) and ($_SESSION["psw"] == $passwd)) {
-							if($this->getMail() != $_SESSION["mail"]) {$this->setMail($_SESSION["mail"]);}
-							if($this->getPasswd() != $_SESSION["psw"]) {$this->setPasswd($_SESSION["psw"]);}
-							if($this->getToken() != $_SESSION["token"]) {$this->setToken($_SESSION["token"]);}
-							if($this->getId() != $_SESSION["id"]) {$this->setId($_SESSION["id"]);}
-						} else {
-							$_SESSION["mail"] = $row["mail"];
-							$_SESSION["psw"] = $row["password"];
-							$_SESSION["token"] = $row["token"];
-							$_SESSION["id"] = $row["id_user"];
-						}
+
+						$_SESSION["mail"] = $row["mail"];
+						$_SESSION["psw"] = $row["password"];
+						$_SESSION["token"] = $row["token"];
+						$_SESSION["id"] = $row["id_user"];
+
 						unset($state);
 						unset($pdo);
 						return $output;
@@ -377,70 +365,6 @@
 			if(strlen($passwd) > 3 and strlen($passwd) < 17) {
 					return true;
 			} else return false;
-		}
-		
-		public function setId($id) {
-			$this->id_user_ = $id;
-		}
-		
-		public function getId() {
-			return $this->id_user_;
-		}
-		
-		public function getMail() {
-			return $this->mail_;
-		}
-		
-		public function setMail($mail) {
-			$this->mail_ = $mail;
-		}
-		
-		public function getPasswd() {
-			return $this->passwd_;
-		}
-		
-		public function setPasswd($passwd) {
-			$this->passwd_ = $passwd;
-		}
-		
-		public function getPseudo() {
-			return $this->pseudo_;
-		}
-		
-		public function setPseudo($pseudo) {
-			$this->pseudo_ = $pseudo;
-		}
-		
-		public function getDOB() {
-			return $this->dateOfBirth_;
-		}
-		
-		public function setDOB($dateOfBirth) {
-			$this->dateOfBirth_ = $dateOfBirth;
-		}
-		
-		public function setLastName($lastName) {
-			$this->lastName_ = $lastName;
-		}
-		
-		public function getLastName() {
-			return $this->lastName_;
-		}
-		
-		public function setFirstName($firstName) {
-			$this->firstName_ = $firstName;
-		}
-		
-		public function getFirstName() {
-			return $this->firstName_;
-		}
-		
-		public function getToken() {
-			return $this->token_;
-		}
-		
-		public function setToken($token) {
-			$this->token_ = $token;
 		}
 	}
 ?>

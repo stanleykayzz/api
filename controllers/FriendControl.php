@@ -7,34 +7,44 @@
 			$this->params_ = $params;
 		}
 
-		public function askFriend($id,$id_friend)
+		public function askFriend()
 		{
 			$friend = new Friend();
-			return json_encode($friend->ask_friend_resquest($params_["id"],$params_["id_friend"]);
+			return json_encode($friend->ask_friend_resquest($this->params_["id"],$this->params_["id_friend"]));
 		}
 
-		public function answerFriend($answer,$id,$id_friend)
+		public function answerFriend()
 		{
 			$friend = new Friend();
-			return json_encode($friend->answer_friend_resquest($params_["answer"],$params_["id"],$params_["id_friend"]);
+			return json_encode($friend->answer_friend_resquest($this->params_["answer"],$this->params_["id"],$this->params_["id_friend"]));
 		}
 
-		public function delFriend($id,$id_friend)
+		public function delFriend()
 		{
 			$friend = new Friend();
-			return json_encode($friend->del_friend($params_["id"],$params_["id_friend"]);
+			return json_encode($friend->del_friend($this->params_["id"],$this->params_["id_friend"]));
 		}
 
-		public function cancelFriend($id,$id_friend)
+		public function cancelFriend()
 		{
 			$friend = new Friend();
-			return json_encode($friend->cancel_friend_request($params_["id"],$params_["id_friend"]);
+			return json_encode($friend->cancel_friend_request($this->params_["id"],$this->params_["id_friend"]));
 		}
 
-		public function getlistFriend($offset,$limit,$id_user)
+		public function getlistFriend()
 		{
 			$friend = new Friend();
-			return json_encode($friend->get_friend_list($params_["offset"],$params_["limit"],$params_["id_user"]);
+			return json_encode($friend->get_friend_list($this->params_["offset"],$this->params_["limit"],$this->params_["id_user"]));
+		}
+
+		public function searchFriend() {
+			$friend = new Friend();
+			return json_encode($friend->search_friend($this->params_["offset"], $this->params_["limit"], $this->params_["id_user"], $this->params_["$name"]));
+		}
+
+		public function getmostpostFriend() {
+			$friend = new Friend();
+			return json_encode($friend->get_list_user_most_post($this->params_["offset"], $this->params_["limit"], $this->params_["id_user"]));
 		}
 	}
 ?>

@@ -1,8 +1,11 @@
-﻿<?php	
-	define('DATA_PATH', realpath(dirname(__FILE__).'/data'));
+﻿<?php
+	session_start();
 	
 	include_once 'models/classe_user.php';
 	include_once 'models/classe_friend.php';
+	include_once 'models/classe_comment.php';
+	include_once 'models/classe_hashtag.php';
+	include_once 'models/classe_post.php';
 	
 	try {
 		//Obtenir tous les parametres des requete POST OU GET
@@ -32,18 +35,30 @@
 		else if(isset($params["id"]) and isset($params["id_friend"]) or isset($params["answer"]) or isset($params["offset"]) or isset($params["limit"])) {
 			$action = strtolower($params['action']).'Friend';
 			
-			if(file_exists("contrllers/{$controller}.php")) {
+			if(file_exists("controllers/{$controller}.php")) {
 				include_once "controllers/{$controller}.php";
 			} else {
 				throw new Exception ('Controller : '.$controller.' is invalid');
 			}
 			
-			$controller = new $controler($params);
+			$controller = new $controller($params);
 			
 			if(method_exists($controller, $action) === false) {
 				throw new Exception('Action : '.$action.'is invalid');
 			}
 			
+			$output['data'] = $controller->$action();
+			$output['result'] = "OK";
+		}
+		else if(isset($params["id_comms"]) and isset($params["texte"])) {
+			$action = strtolower($params['action']).'Comment';
+
+			if(file_exists("controllers/{$controller}.php")) {
+				include_once "controllers/{$controller}.php";
+			} else {
+				throw new Exception('Controller : '.$controller.' is invalid');
+			}
+
 			$output['data'] = $controller->$action();
 			$output['result'] = "OK";
 		}
