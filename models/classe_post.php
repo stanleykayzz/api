@@ -9,6 +9,8 @@ class post
 	private $user;
 	private $idPost;
 	private $datePost;
+	private $limit;
+	private $offset;
 	private $description;//on passe un objet commentaire en parametre
 
 	//je crée un constructeur pour les publications
@@ -153,38 +155,34 @@ supprimer tous les éléments associés à cette publication.*/
 
 	public function Timeline($connectedUser, $offset=0, $limit=5)
 	{
-
-		// on compte ses publications et ses amis
-		//page
-		//modulo
+		$this->limit = $limit;
+		$this->offset = $offset;
 		$nbrPublication=0;
 		$l=$limit;
 
-		$utilisateur;
 		try
-	{		
+		{		
 			//ON établi une connexion avec la base de données
 			$pdo = new PDO("mysql:host=localhost;dbname=projetapi", 'root','');
 			// on affiche seulement les status de l'utilisateur connecté
-	        $statement = $pdo->query("SELECT * FROM post WHERE id_users = ".$connectedUser);
+	        $statement = $pdo->query("SELECT * FROM post WHERE id_users = ".$connectedUser."order by datePost desc limit ".$offset.", ".$limit);
     		for($o=$offset;$line = $statement->fetch(PDO::FETCH_ASSOC);$o++){
-    		$post = new post($line["id_posts"], $line["texte"]);
+    		$post = new post();
+    		$post->createPost($line["id_posts"], $line["texte"],$line["datePost"], $line["id_users"]);
     		$postList[$o]= $post;
     		$nbrPublication++;
-    			//echo $post->description;
-    			//echo "\n nbrPublication ".$nbrPublication." \n";
     	}
 	}
 	catch (Exception $e)
 	{
-	        die('Erreur : ' . $e->getMessage());
-	        echo "ça passe pas";
+	    die('Erreur : ' . $e->getMessage());
+	    echo "ça passe pas";
 	}
-
 
 	for($i=$offset;$i<$l;$i++)
 	{
 		$resultList[$i] = $postList[$i];
+		echo "<br/> ".$resultList[$i]." <br/>";
 	}
 		return $resultList;
 	}
@@ -197,7 +195,8 @@ supprimer tous les éléments associés à cette publication.*/
 //$publi->deletePost(19);
 //$publi->alterPost(5,"Bon moi je vais me coucher, à plus");
 $p = new post();
-$p->createPost(1," me too ",'2013-06-27');
-$p->createPost(2," mewtwo ",'2014-06-27');
+$p->Timeline(1,0,2);
+//$p->createPost(1," me too ",'2013-06-27');
+//$p->createPost(2," mewtwo ",'2014-06-27');
 
 ?>
