@@ -6,8 +6,9 @@
 			$this->params_ = $params;
 		}
 
-		public clickonHashtag() {
-			
+		public createHashtag() {
+			$hash = new Hashtag();
+			return json_encode($hash->createHashtag($params_["mot"]));
 		}
 	}
 ?>
