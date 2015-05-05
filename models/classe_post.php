@@ -201,7 +201,7 @@ supprimer tous les éléments associés à cette publication.*/
 	offset: la position du premier element à envoyer
 	limit: Nombre d'éléments à renvoyer*/
 
-	public function Timeline($connectedUser, $offset=0, $limit=5)
+	public function timelinePost($connectedUser, $offset=0, $limit=5)
 	{
 
 		// on compte ses publications et ses amis
@@ -211,8 +211,7 @@ supprimer tous les éléments associés à cette publication.*/
 		$l=$limit;
 
 		$utilisateur;
-		try
-	{		
+
 			//ON établi une connexion avec la base de données
 			$pdo = new PDO("mysql:host=localhost;dbname=projetapi", 'root','');
 			// on affiche seulement les status de l'utilisateur connecté
@@ -221,16 +220,7 @@ supprimer tous les éléments associés à cette publication.*/
     		$post = new post($line["id_posts"], $line["texte"]);
     		$postList[$o]= $post;
     		$nbrPublication++;
-    			//echo $post->description;
-    			//echo "\n nbrPublication ".$nbrPublication." \n";
     	}
-	}
-	catch (Exception $e)
-	{
-	        die('Erreur : ' . $e->getMessage());
-	        echo "ça passe pas";
-	}
-
 
 	for($i=$offset;$i<$l;$i++)
 	{

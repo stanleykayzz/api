@@ -25,6 +25,12 @@ class PostControl
 		return json_encode($com->deleteComment($this->params_["id_comms"]));
 	}
 
+	public function timelinePost() {
+		$com = new post();
+
+		return json_encode($com->timelinePost($this->params_["id_user"], $this->params_["offset"], $params_["limit"]));
+	}
+
 }
 
 
